@@ -7,4 +7,7 @@ services:
     envVars:
       - key: PORT
         value: 10000
+<<<<<<< HEAD
 
+=======
+>>>>>>> f410331 (fix: set host to 0.0.0.0 for render)

@@ -44,4 +44,5 @@ def generate_report():
     return send_file(output_pdf, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=10000)
+    app.run(debug=True, host="0.0.0.0")
+
