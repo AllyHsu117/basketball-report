@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>Women Basketball Player‘s Performance</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 50px;
+    }
+
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    form {
+      background-color: #ffffff;
+      padding: 30px 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 350px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 12px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="file"] {
+      width: 100%;
+      padding: 8px 10px;
+      margin-top: 4px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .note {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>🏀 Women Basketball Player's Performance</h2>
+  <form id="reportForm">
+    <label>name
+      <input type="text" name="name" required>
+    </label>
+    <label>sex
+      <input type="text" name="gender" value="W" required>
+    </label>
+    <label>age
+      <input type="number" name="age" required>
+    </label>
+    <label>height（cm）
+      <input type="number" name="height" required>
+    </label>
+    <label>weight（kg）
+      <input type="number" name="weight" required>
+    </label>
+    <label>load Excel
+      <input type="file" name="excel_file" accept=".xlsx" required>
+    </label>
+    <button type="submit">📄 GET PDF </button>
+  </form>
+
+  <div class="note">請先填寫資料與上傳檔案，報表將自動下載。</div>
+
+  <script>
+    document.getElementById("reportForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+
+      const response = await fetch("/generate_report", {
+        method: "POST",
+        body: formData
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "report.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        alert("❌ 報表產生失敗，請確認資料與檔案格式！");
+      }
+    });
+  </script>
+</body>
+</html>
