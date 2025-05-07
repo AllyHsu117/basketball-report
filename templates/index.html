@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>Women Basketball Player‘s Performance</title>
+  <title>Women Basketball Players' Performance</title>
   <style>
     body {
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -35,7 +35,8 @@
 
     input[type="text"],
     input[type="number"],
-    input[type="file"] {
+    input[type="file"],
+    input[type="date"] {
       width: 100%;
       padding: 8px 10px;
       margin-top: 4px;
@@ -68,7 +69,7 @@
   </style>
 </head>
 <body>
-  <h2>🏀 Women Basketball Player's Performance</h2>
+  <h2>🏀 Women Basketball Players' Performance</h2>
   <form id="reportForm">
     <label>name
       <input type="text" name="name" required>
@@ -85,39 +86,42 @@
     <label>weight（kg）
       <input type="number" name="weight" required>
     </label>
+    <label>date
+      <input type="date" name="date" required>
+    </label>
     <label>load Excel
       <input type="file" name="excel_file" accept=".xlsx" required>
     </label>
     <button type="submit">📄 GET PDF </button>
   </form>
 
-  <div class="note">請先填寫資料與上傳檔案，報表將自動下載。</div>
+  <div class="note">Please fill in the information and upload the file. The report will be downloaded automatically.</div>
 
   <script>
     document.getElementById("reportForm").addEventListener("submit", async function (e) {
       e.preventDefault();
       const form = e.target;
       const formData = new FormData(form);
-
+  
       const response = await fetch("/generate_report", {
         method: "POST",
         body: formData
       });
-
+  
       if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
+        const data = await response.json();  // 從 JSON 取得下載連結
+        const downloadUrl = data.url;
+  
+        // ⬇️ 建立連結下載（保留檔名）
         const a = document.createElement("a");
-        a.href = url;
-        a.download = "report.pdf";
+        a.href = downloadUrl;
+        a.setAttribute("download", "");
         document.body.appendChild(a);
         a.click();
         a.remove();
-        window.URL.revokeObjectURL(url);
       } else {
         alert("❌ 報表產生失敗，請確認資料與檔案格式！");
       }
     });
   </script>
-</body>
-</html>
+  

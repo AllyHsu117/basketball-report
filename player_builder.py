@@ -1,4 +1,4 @@
-def build_sample_player(df, name, gender, age, height, weight, result):
+def build_sample_player(df, name, gender, age, height, weight, date, result):
     # 標準化 name 欄位與使用者輸入
     df['name'] = df['name'].astype(str).str.strip().str.upper()
     name = name.strip().upper()
@@ -13,6 +13,7 @@ def build_sample_player(df, name, gender, age, height, weight, result):
     # 基本欄位與原始數值
     sample_player = {
         'name': name,
+        'date': date,
         'gender': gender,
         'age': age,
         'height': height,

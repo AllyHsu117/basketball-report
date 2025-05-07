@@ -1,7 +1,6 @@
-from flask import Flask, request, send_file, render_template
+from flask import Flask, request, send_file, render_template, jsonify
 import pandas as pd
 import os
-
 
 from calculatescore import get_score, calculate_scores
 from report_gen import generate_ascii_report, ascii_text_to_pdf
@@ -24,6 +23,7 @@ def generate_report():
     age = int(request.form['age'])
     height = int(request.form['height'])
     weight = int(request.form['weight'])
+    date = request.form['date']  # ✅ 新增日期欄位
     file = request.files['excel_file']
 
     # 儲存上傳 Excel
@@ -34,15 +34,25 @@ def generate_report():
     df = pd.read_excel(filepath)
     df['name'] = df['name'].astype(str).str.strip().str.upper()
     result = calculate_scores(df, name, weight)
-    player = build_sample_player(df, name, gender, age, height, weight, result)
+    player = build_sample_player(df, name, gender, age, height, weight, date, result)
+    player['date'] = date  # ✅ 加入日期進 player dict
 
-    # 報表 & PDF
+    # 產生報表 PDF
     ascii_txt = generate_ascii_report(player)
-    output_pdf = os.path.join(REPORT_FOLDER, f"{name}_report.pdf")
-    ascii_text_to_pdf(ascii_txt, output_pdf)
+    output_filename = f"{name}_report.pdf"
+    output_pdf = os.path.join(REPORT_FOLDER, output_filename)
+    ascii_text_to_pdf(ascii_txt, player, output_pdf)
 
-    return send_file(output_pdf, as_attachment=True)
+    # 回傳下載連結
+    return jsonify({"url": f"/download/{output_filename}"})
+
+@app.route('/download/<filename>')
+def download_file(filename):
+    return send_file(
+        os.path.join(REPORT_FOLDER, filename),
+        as_attachment=True,
+        download_name=filename
+    )
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")
-
