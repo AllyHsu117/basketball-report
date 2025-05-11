@@ -30,7 +30,7 @@ def generate_ascii_report(player):
     report.append(f"|{'-'*21} | {'-'*18} | {'-'*10} | {'-'*12} |")
     report.append(f"| * Agility            | {'':<18} | {str(player['Agility']) + ' / 10':<10} | {'':<12} |")
     report.append(f"|   - Lane Agility     | {str(player['Lane agility']) + ' s':<18} | {'':<10} | {'12 s':<12} |")
-    report.append(f"|   - 505              | {str(player['505']) + ' s':<18} | {'':<10} | {'3.3 s':<12} |")
+    report.append(f"|   - 505              | {str(player['505']) + ' s':<18} | {'':<10} | {'2.8 s':<12} |")
 
     report.append(f"| * Strength           | {'':<18} | {str(player['Strength']) + ' / 10':<10} | {'':<12} |")
     report.append(f"|   - Squat            | {str(player['Squat']) + ' kg/bw':<18} | {'':<10} | {'1 kg/bw':<12} |")
