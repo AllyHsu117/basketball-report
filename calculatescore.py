@@ -46,7 +46,7 @@ def calculate_scores(df, name, weight):
 
     # 敏捷性
     lane_score = get_score(player['Lane agility (s)'], [11.5, 12, 12.5])
-    score505 = get_score(player['505 (s)'], [3.1, 3.3, 3.6])
+    score505 = get_score(player['505 (s)'], [2.6, 2.8, 3.0])
     scores['Lane_score'] = lane_score
     scores['Score505'] = score505
     scores['Agility'] = round((lane_score + score505) / 2)
@@ -77,7 +77,7 @@ def calculate_scores(df, name, weight):
     scores['Anareobic ability'] = get_score(player['RSA (s)'], [3.6, 3.8, 4], reverse=False)
 
     # 有氧能力
-    scores['Areobic ability'] = get_score(player['30-15 (VIFT)'], [13.5, 15, 17], reverse=True)
+    scores['Areobic ability'] = get_score(player['30-15 (VIFT)'], [14, 15, 16], reverse=True)
 
     
     
