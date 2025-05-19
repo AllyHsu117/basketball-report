@@ -4,68 +4,92 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.colors import red, black
 
 def ascii_trend_chart_for_name(name, df_all, max_score=100, height=10):
-    """
-    為指定球員產出 ASCII 趨勢圖（2025/05～2025/12 固定時間軸）
-    - ● 表示個人分數，▲ 表示全班平均分數
-    - 數字顯示在點左側，點精準對齊月標
-    """
     import pandas as pd
 
     df_all['date'] = pd.to_datetime(df_all['date'])
 
-    # 固定時間軸（月起始）
-    months = pd.date_range("2025-04-01", "2025-12-01", freq="MS")
+    # 1️⃣ 固定時間軸
+    months = pd.date_range("2025-05-01", "2025-12-01", freq="MS")
     month_labels = [d.strftime("%m") for d in months]
-    space_per_month = 5  # 🔧 每個月寬度，讓點不擠
+    space_per_month = 9
     width = len(months) * space_per_month
-    col_map = {d.strftime("%Y-%m"): space_per_month * i + space_per_month // 2 for i, d in enumerate(months)}
 
-    # 資料整理
+    col_map = {
+    d.strftime("%Y-%m"): 3 + space_per_month * i
+    for i, d in enumerate(months)
+}
+
+    # 2️⃣ 整理個人與平均資料
     player_df = df_all[df_all['name'] == name]
     player_df = player_df[player_df['date'].dt.strftime('%Y-%m').isin(col_map.keys())]
     scores = dict(zip(player_df['date'].dt.strftime('%Y-%m'), player_df['Total score']))
+
     avg_df = df_all[df_all['date'].dt.strftime('%Y-%m').isin(col_map.keys())]
     avg_scores = avg_df.groupby(avg_df['date'].dt.strftime('%Y-%m'))['Total score'].mean().to_dict()
 
-    # 建立畫布
-    canvas = [[" " for _ in range(width + 5)] for _ in range(height)]
+    # 3️⃣ 建立畫布
+    canvas = [[" " for _ in range(width + 6)] for _ in range(height)]
 
-    def draw_point(score, x_pos, symbol):
+    # Y 軸位置計算函數
+    def get_row(score):
         y = round((score / max_score) * (height - 1))
-        row = height - 1 - y
+        return height - 1 - y
+
+    # ✅ 修正縮排的畫點函數
+    def draw_point(score, x_pos, symbol, offset=0, align="left"):
+        row = get_row(score)
         label = str(int(score)).rjust(3)
-        for j, ch in enumerate(label):
-            canvas[row][x_pos - 3 + j] = ch  # 數字靠左對齊
-        canvas[row][x_pos] = symbol
 
-    # 畫 ● 個人分數
-    for ym, score in scores.items():
-        x = col_map[ym]  # 往右推移避免重疊 Y軸標籤
-        draw_point(score, x, "●")
+        if align == "left":
+            for j, ch in enumerate(label):
+                canvas[row][x_pos - 3 + j ] = ch
+        elif align == "right":
+            for j, ch in enumerate(label):
+                canvas[row][x_pos + 2 + j ] = ch
 
-    # 畫 ▲ 平均分數
-    for ym, score in avg_scores.items():
-        x = col_map[ym] 
-        draw_point(score, x, "▲")
-    
-    # 組裝圖表文字
-    lines = [f" (● personal ▲ average):"]
+        canvas[row][x_pos + offset] = symbol
+
+    # 4️⃣ 寫入所有月份的點
+    for ym in col_map:
+        x = col_map[ym]
+
+        personal_score = scores.get(ym)
+        avg_score = avg_scores.get(ym)
+
+        if personal_score is not None:
+            personal_row = get_row(personal_score)
+            draw_point(personal_score, x, "●", offset=0, align="left")
+        else:
+            personal_row = None
+
+        if avg_score is not None:
+            avg_row = get_row(avg_score)
+            if personal_row is not None and abs(avg_row - personal_row) <= 1:
+                offset = 2
+            else:
+                offset = 0
+            draw_point(avg_score, x, "▲", offset=offset, align="right")
+
+    # 5️⃣ 組裝圖表
+    lines = [f"(● personal ▲ average):"]
     for i, row in enumerate(canvas):
         y_val = (max_score // height) * (height - 1 - i)
         y_label = f"{y_val:>3} |"
-        lines.append(y_label + "".join(row) )
+        lines.append(y_label + "".join(row))
 
-    # 畫 X 軸底線
-    lines.append("    " + "_" * width )
+    # 6️⃣ X 軸底線
+    lines.append("    " + "_" * width)
 
-    # 畫月份標籤（對齊點位置）
-    label_line = list(" " * (width + 4))
+    # 7️⃣ 月份標籤
+    label_line = list(" " * (width + 8))
     for i, m in enumerate(month_labels):
-        x = col_map[f"2025-{m}"] + 4
+        ym = f"2025-{m}"
+        x = col_map[ym]
         if x + 1 < len(label_line):
-            label_line[x] = m[0]
-            label_line[x + 1] = m[1]
-    lines.append("".join(label_line) )
+            label_line[x+ 4] = m[0]
+            label_line[x +5] = m[1]
+
+    lines.append("".join(label_line))
 
     return "\n".join(lines)
 
